@@ -1,17 +1,15 @@
 #include "ConversionTools.h"
+#include "Defines.h"
 #include <gl/freeglut.h>
 
-#define N 400
-
 int ConversionTools::ConvertCoordToArray(int xPos, int yPos) {
-	//      IX(i,j) = ((i) + (N+2) * (j))
-	int arrayValue = ((xPos)+(N + 2)*yPos);
+	int arrayValue = ((xPos)+(RES + 2)*yPos);
 	return arrayValue;
 }
 std::tuple<int, int> ConversionTools::ConvertArraytoCoord(int arrayValue) {
 	int xPos, yPos;
-	xPos = arrayValue % (N + 2);
-	yPos = (arrayValue - xPos) / (N + 2);
+	xPos = arrayValue % (RES + 2);
+	yPos = arrayValue / (RES + 2);
 
 	std::tuple<int, int> coordinates(xPos, yPos);
 	return coordinates;
@@ -21,18 +19,18 @@ std::tuple<float, float> ConversionTools::ConvertCoordtoWindow(int xPos, int yPo
 	float newX = (float) xPos;
 	float newY = (float) yPos;
 
-	if (xPos < (N / 2)) {
-		newX = (1 - (newX / (N / 2)))*-1;
+	if (xPos < (RES / 2)) {
+		newX = (1 - (newX / (RES / 2)))*-1;
 	}
 	else {
-		newX = (newX - (N / 2)) / (N / 2);
+		newX = (newX - (RES / 2)) / (RES / 2);
 	}
 
-	if (yPos < (N / 2)) {
-		newY = 1 - (newY / (N / 2));
+	if (yPos < (RES / 2)) {
+		newY = 1 - (newY / (RES / 2));
 	}
 	else {
-		newY = ((newY - (N / 2)) / (N / 2))*-1;
+		newY = ((newY - (RES / 2)) / (RES / 2))*-1;
 	}
 
 	std::tuple<float, float> WindowSpace(newX, newY);

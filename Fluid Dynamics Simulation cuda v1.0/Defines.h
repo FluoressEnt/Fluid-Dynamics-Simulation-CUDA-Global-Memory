@@ -7,7 +7,7 @@
 #ifndef DEFINES
 #define DEFINES
 
-#define RES 400									//resolution of the window
+#define RES 900									//resolution of the window
 #define ALENGTH (RES+2)*(RES+2)					//total array size
 
 #define VISC 1.0f								//viscosity constant
