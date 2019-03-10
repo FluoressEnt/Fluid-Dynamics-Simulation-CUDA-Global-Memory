@@ -60,8 +60,15 @@ Solver::Solver() {
 
 Solver::~Solver(void)
 {
-	//does any deallocation need to happen when the program closes?
-	//release used cuda memory perhaps
+	CUDA_CHECK(cudaFree(cNewDens));
+	CUDA_CHECK(cudaFree(cOldDens));
+	CUDA_CHECK(cudaFree(cNewVelX));
+	CUDA_CHECK(cudaFree(cNewVelY));
+	CUDA_CHECK(cudaFree(cOldVelX));
+	CUDA_CHECK(cudaFree(cOldVelY));
+	CUDA_CHECK(cudaFree(cSDens));
+	CUDA_CHECK(cudaFree(cSVelX));
+	CUDA_CHECK(cudaFree(cSVelY));
 }
 
 //retreive array values from CPU ready for display

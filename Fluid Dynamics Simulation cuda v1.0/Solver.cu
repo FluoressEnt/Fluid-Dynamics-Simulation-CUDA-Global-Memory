@@ -25,7 +25,7 @@ __global__ void cCalculate(float* cSDens, float* cSVelX, float* cSVelY, float* c
 		cDiffuse(1, cNewDens, cOldDens);
 		__syncthreads();
 	}
-	__syncwarp();
+
 	cSwap(&cOldDens, &cNewDens);
 	__syncthreads();
 
