@@ -19,9 +19,6 @@ public:
 	void SetInputDens(int);
 	void SetInputVel(int, int, int);
 
-	float* GetInputDens();
-	float* GetDebugResult();
-
 private:
 
 	//input arrays

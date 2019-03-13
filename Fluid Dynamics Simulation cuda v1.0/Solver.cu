@@ -3,17 +3,13 @@
 #include "cuda.h"
 #include "Solver.h"
 
+///Creates a kernel that runs in parallel on the GPU
 void Solver::CalculateWrapper() {
-	int numBlocks, threadsPerBlock;
-	//threads per block maximum is 1024
-	threadsPerBlock = 256;
-
-	numBlocks = (ALENGTH + threadsPerBlock - 1) / threadsPerBlock;
-
-	cCalculate <<<numBlocks, threadsPerBlock >>> (cSDens, cSVelX, cSVelY, cNewDens, cOldDens, cNewVelX, cNewVelY, cOldVelX, cOldVelY);
+	cCalculate <<<NBLOCK, TPBLOCK>>> (cSDens, cSVelX, cSVelY, cNewDens, cOldDens, cNewVelX, cNewVelY, cOldVelX, cOldVelY);
 }
 
-//needs rework to involve every threadID?
+///Here is the algorithm that simulates a Real-Time fluid written as a function that runs in parallel on the GPU
+///It is tagged with __global__ to show the entry point from the CPU and contains calls to __device__ functions that can only be accessed from the GPU
 __global__ void cCalculate(float* cSDens, float* cSVelX, float* cSVelY, float* cNewDens, float* cOldDens, float* cNewVelX, float* cNewVelY, float* cOldVelX, float* cOldVelY) {
 	//density step
 	cAddSource(cNewDens, cSDens);
@@ -83,6 +79,7 @@ __global__ void cCalculate(float* cSDens, float* cSVelX, float* cSVelY, float* c
 	__syncthreads();
 }
 
+///A function that runs on the GPU that gets the threadID and increments the appropriate array value
 __device__ void cAddSource(float *cNewDens, float *sourceArray) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	if (ID < ALENGTH) {
@@ -91,7 +88,7 @@ __device__ void cAddSource(float *cNewDens, float *sourceArray) {
 		cNewDens[ID] += temp;
 	}
 }
-
+///A function that runs on the GPU That calculates the diffusion on a per thread basis
 __device__ void cDiffuse(int b, float* cNewDens, float* cOldDens) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -107,7 +104,7 @@ __device__ void cDiffuse(int b, float* cNewDens, float* cOldDens) {
 		cSetBoundary(b, cNewDens);
 	}
 }
-
+///A function that runs on the GPU that calculates the advection on a per thread basis
 __device__ void cAdvection(float* cNewDens, float* cOldDens, float* cVelX, float* cVelY) {
 	int left, bottom, right, top, ID;
 	float x, y, distToRight, distToTop, distToLeft, distToBottom;
@@ -145,7 +142,7 @@ __device__ void cAdvection(float* cNewDens, float* cOldDens, float* cVelX, float
 			+ distToLeft * (distToTop*cOldDens[cGetArrayPos(right, bottom)] + distToBottom * cOldDens[cGetArrayPos(right, top)]);
 	}
 }
-
+///A function that runs on the GPU that calculates the final part of projection on a per thread basis
 __device__ void cFinalProjection(float* cNewVelX, float* cNewVelY, float* cOldVelX) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	float h = 1.0f / RES;
@@ -161,6 +158,7 @@ __device__ void cFinalProjection(float* cNewVelX, float* cNewVelY, float* cOldVe
 		cSetBoundary(2, cNewVelY);
 	}
 }
+///A function that runs on the GPU that calculates the projection across Y part of projection on a per thread basis
 __device__ void cProjectionInY(float* cNewVelX, float* cNewVelY, float* cOldVelX, float* cOldVelY) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	float h = 1.0f / RES;
@@ -177,6 +175,7 @@ __device__ void cProjectionInY(float* cNewVelX, float* cNewVelY, float* cOldVelX
 		cSetBoundary(0, cOldVelX);
 	}
 }
+///A function that runs on the GPU that calculates the projection across X part of projection on a per thread basis
 __device__ void cProjectionInX(float* cOldVelX, float* cOldVelY) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -191,12 +190,14 @@ __device__ void cProjectionInX(float* cOldVelX, float* cOldVelY) {
 	}
 }
 
+///A function that runs on the GPU that assigns the boundary assuming continuity
 __device__ void cSetBoundary(int b, float* boundArray) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	int x, y;
 	x = cGetX(ID);
 	y = cGetY(ID);
 
+	//setting sides
 	if (x > 0 && x <= RES && y == 0) {
 		boundArray[ID] = b == 2 ? -boundArray[ID + RES + 2] : boundArray[ID + RES + 2];
 	}
@@ -210,6 +211,7 @@ __device__ void cSetBoundary(int b, float* boundArray) {
 		boundArray[ID] = b == 1 ? -boundArray[ID - 1] : boundArray[ID - 1];
 	}
 
+	//setting corners
 	else if (x == 0 && y == 0) {
 		boundArray[ID] = 0.5f *(boundArray[ID + 1] + boundArray[ID + RES + 2]);
 	}
@@ -224,6 +226,7 @@ __device__ void cSetBoundary(int b, float* boundArray) {
 	}
 }
 
+///A function that runs on the GPU that swaps the pointers of two arrays
 __device__ void cSwap(float** arrayOne, float** arrayTwo) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	if (ID == 0) {
@@ -233,14 +236,15 @@ __device__ void cSwap(float** arrayOne, float** arrayTwo) {
 	}
 }
 
+///A function that runs on the GPU that calculates the 2D X coordinate given the 1D array position
 __device__ int cGetX(int arrayPos) {
 	return (arrayPos % (RES + 2));
 }
-
+///A function that runs on the GPU that calculates the 2D Y coordinate given the 1D array position
 __device__ int cGetY(int arrayPos) {
 	return (arrayPos / (RES + 2));
 }
-
+///A function that runs on the GPU that calculates the 1D array position given the 2D X&Y coordinates
 __device__ int cGetArrayPos(int xPos, int yPos) {
 	return xPos + (RES + 2)*yPos;
 }

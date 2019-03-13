@@ -4,7 +4,6 @@
 
 
 int main(int argc, char* argv[]) {
-	//copy outputfrom GPU to CPU for display
 
 	//setup window
 	glutInit(&argc, argv);
@@ -19,7 +18,7 @@ int main(int argc, char* argv[]) {
 	glutDisplayFunc(Visualisation::Render);
 	glutIdleFunc(Visualisation::Calculate);
 
-	//initialise GL
+	//initialise GL setup
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glPointSize(2.0f);
 

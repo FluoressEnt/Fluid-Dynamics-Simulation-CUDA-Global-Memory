@@ -2,7 +2,7 @@
 #include <iostream>
 
 
-//initialise Arrays on CPU with value 0
+///Initialise Arrays on CPU with value 0
 Solver::Solver() {
 
 	//create arrays
@@ -58,6 +58,7 @@ Solver::Solver() {
 	CUDA_CHECK(cudaMemcpy(cSVelY, sVelY, ALENGTH * sizeof(float), cudaMemcpyHostToDevice));
 }
 
+///Release memory on the GPU on destruction of the Solver object
 Solver::~Solver(void)
 {
 	CUDA_CHECK(cudaFree(cNewDens));
@@ -71,24 +72,28 @@ Solver::~Solver(void)
 	CUDA_CHECK(cudaFree(cSVelY));
 }
 
-//retreive array values from CPU ready for display
+///Retreive density array from the GPU
 float* Solver::GetDensityArray() {
 	CUDA_CHECK(cudaMemcpy(newDens, cNewDens, ALENGTH * sizeof(float), cudaMemcpyDeviceToHost));
 	return newDens;
 }
+///Revreive velocityX array from the GPU
 float* Solver::GetVelXArray() {
 	CUDA_CHECK(cudaMemcpy(newVelX, cNewVelX, ALENGTH * sizeof(float), cudaMemcpyDeviceToHost));
 	return newVelX;
 }
+///Retreive velocityY array from the GPU
 float* Solver::GetVelYArray() {
 	CUDA_CHECK(cudaMemcpy(newVelY, cNewVelY, ALENGTH * sizeof(float), cudaMemcpyDeviceToHost));
 	return newVelY;
 }
 
+///Set inputDensity array value to 1.0f then copy to the GPU
 void Solver::SetInputDens(int arrayValue) {
 	sDens[arrayValue] = 1.0f;
 	CUDA_CHECK(cudaMemcpy(cSDens, sDens, ALENGTH * sizeof(float), cudaMemcpyHostToDevice));
 }
+///Set inputVelocity array values to input value and then copy to the GPU
 void Solver::SetInputVel(int arrayValue, int xVel, int yVel) {
 	sVelX[arrayValue] = xVel;
 	sVelY[arrayValue] = yVel;
@@ -96,24 +101,14 @@ void Solver::SetInputVel(int arrayValue, int xVel, int yVel) {
 	CUDA_CHECK(cudaMemcpy(cSVelY, sVelY, ALENGTH * sizeof(float), cudaMemcpyHostToDevice));
 }
 
-float* Solver::GetInputDens() {
-	CUDA_CHECK(cudaMemcpy(sDens, cSDens, ALENGTH * sizeof(float), cudaMemcpyDeviceToHost));
-	return sDens;
-}
-float* Solver::GetDebugResult() {
-	//CUDA_CHECK(cudaMemcpy(newDens, cNewDens, ALENGTH * sizeof(float), cudaMemcpyDeviceToHost));
-	//CUDA_CHECK(cudaMemcpy(oldDens, cOldDens, ALENGTH * sizeof(float), cudaMemcpyDeviceToHost));
-	//CUDA_CHECK(cudaMemcpy(newVelX, cNewVelX, ALENGTH * sizeof(float), cudaMemcpyDeviceToHost));
-	//CUDA_CHECK(cudaMemcpy(newVelY, cNewVelY, ALENGTH * sizeof(float), cudaMemcpyDeviceToHost));
-	return newVelY;
-}
-
+///Set every inputDensity array element to 0 and copy to the GPU
 void Solver::RefreshDensIn() {
 	for (auto i = 0u; i < ALENGTH; i++) {
 		sDens[i] = 0;
 	}
 	CUDA_CHECK(cudaMemcpy(cSDens, sDens, ALENGTH * sizeof(float), cudaMemcpyHostToDevice));
 }
+///Set every inputVelocityX&Y array element to 0 and copy to the GPU
 void Solver::RefreshVelIn() {
 	for (auto i = 0u; i < ALENGTH; i++) {
 		sVelX[i] = 0;
@@ -122,6 +117,7 @@ void Solver::RefreshVelIn() {
 	CUDA_CHECK(cudaMemcpy(cSVelX, sVelX, ALENGTH * sizeof(float), cudaMemcpyHostToDevice));
 	CUDA_CHECK(cudaMemcpy(cSVelY, sVelY, ALENGTH * sizeof(float), cudaMemcpyHostToDevice));
 }
+///Set every array element to 0 and copy to the GPU
 void Solver::RefreshAll() {
 	//set arrays to 0
 	for (auto i = 0u; i < ALENGTH; i++) {

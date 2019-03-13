@@ -2,10 +2,13 @@
 #include "Defines.h"
 #include <gl/freeglut.h>
 
+///Converts a 2D coordinate to a 1D array position
 int ConversionTools::ConvertCoordToArray(int xPos, int yPos) {
 	int arrayValue = ((xPos)+(RES + 2)*yPos);
 	return arrayValue;
 }
+
+///Converts a 1D array position to a 2D coordinate
 std::tuple<int, int> ConversionTools::ConvertArraytoCoord(int arrayValue) {
 	int xPos, yPos;
 	xPos = arrayValue % (RES + 2);
@@ -15,6 +18,7 @@ std::tuple<int, int> ConversionTools::ConvertArraytoCoord(int arrayValue) {
 	return coordinates;
 }
 
+///Converts a 2D array position to Freeglut Window position
 std::tuple<float, float> ConversionTools::ConvertCoordtoWindow(int xPos, int yPos) {
 	float newX = (float) xPos;
 	float newY = (float) yPos;
@@ -37,7 +41,7 @@ std::tuple<float, float> ConversionTools::ConvertCoordtoWindow(int xPos, int yPo
 	return	WindowSpace;
 }
 
-//shifts origin to centre of screen
+///Converts a Freeglut Window position to a Gl position
 float ConversionTools::ConvertWindowToGL(int number, bool isHeight) {
 	float windowDimension;
 	float newNumber = (float)number;
