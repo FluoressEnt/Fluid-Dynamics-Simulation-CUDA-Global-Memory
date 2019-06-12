@@ -3,6 +3,7 @@
 #include "cuda.h"
 #include "Solver.h"
 
+///function to swap the pointers of two arrays
 void swap(float **a, float **b) {
 	float *t = *a;
 	*a = *b;
@@ -124,7 +125,7 @@ void Solver::CalculateWrapper() {
 	}
 }
 
-
+///kernel that adds a source to array values
 __global__ void cAddSource(float *inputArr, float *arrayAffected) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	if (ID < ALENGTH) {
@@ -134,7 +135,7 @@ __global__ void cAddSource(float *inputArr, float *arrayAffected) {
 	}
 }
 
-
+///kernel that calculates the diffusion of the fluid on th GPU
 __global__ void cCalcDiffusion(float* newArray, float* oldArray) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -149,7 +150,7 @@ __global__ void cCalcDiffusion(float* newArray, float* oldArray) {
 	}
 }
 
-
+///kernel that calculates the advection of the fluid on the GPU
 __global__ void cCalcAdvection(float* cNew, float* cOld, float* cVelX, float* cVelY) {
 	int left, bottom, right, top, ID;
 	float x, y, distToRight, distToTop, distToLeft, distToBottom;
@@ -186,7 +187,7 @@ __global__ void cCalcAdvection(float* cNew, float* cOld, float* cVelX, float* cV
 	}
 }
 
-
+///kernel that calculates a part of the projection of the fluid on the GPU
 __global__ void cCalcFinalProj(float* cNewVelX, float* cNewVelY, float* cOldVelX) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	float h = 1.0f / RES;
@@ -200,7 +201,7 @@ __global__ void cCalcFinalProj(float* cNewVelX, float* cNewVelY, float* cOldVelX
 	}
 }
 
-
+///kernel that calculates a part of the projection of the fluid on the GPU
 __global__ void cCalcProjY(float* cNewVelX, float* cNewVelY, float* cOldVelX, float* cOldVelY) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	float h = 1.0f / RES;
@@ -215,7 +216,7 @@ __global__ void cCalcProjY(float* cNewVelX, float* cNewVelY, float* cOldVelX, fl
 	}
 }
 
-
+///kernel that calculates a part of the projection of the fluid on the GPU
 __global__ void cCalcProjX(float* cOldVelX, float* cOldVelY) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -228,7 +229,7 @@ __global__ void cCalcProjX(float* cOldVelX, float* cOldVelY) {
 	}
 }
 
-
+///kernel that sets the boundary of the fluid to one where fluid does not leave the grid
 __global__ void cCalcBound(int b, float* boundArray) {
 	int ID = blockIdx.x * blockDim.x + threadIdx.x;
 	int x, y;
