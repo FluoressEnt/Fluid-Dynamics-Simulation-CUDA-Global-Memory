@@ -7,13 +7,15 @@
 #ifndef DEFINES
 #define DEFINES
 
-#define RES 600										//resolution of the window
+#define RES 400									//resolution of the window
 #define ALENGTH (RES+2)*(RES+2)						//total array size
 
-#define VISC 1.0f									//viscosity constant
+#define VISC 0.005f									//viscosity constant
 #define DT 0.04f									//static delta time
 
-#define TPBLOCK 256									//threads per block
+#define BRES 16										//resolution of blocksize
+
+#define TPBLOCK BRES*BRES							//threads per block
 #define NBLOCK (ALENGTH + TPBLOCK - 1) / TPBLOCK	//number of blocks
 
 #define CUDA_CHECK(fn) {\

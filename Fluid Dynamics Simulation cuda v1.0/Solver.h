@@ -48,18 +48,16 @@ private:
 #ifdef __cplusplus
 extern "C" {
 #endif
+	//kernels
+	__global__ void cAddSource(float*, float*);
+	__global__ void cCalcDiffusion(float*, float*);
+	__global__ void cCalcAdvection(float*, float*, float*, float*);
+	__global__ void cCalcProjY(float*, float*, float*, float*);
+	__global__ void cCalcProjX(float*, float*);
+	__global__ void cCalcFinalProj(float*, float*, float*);
+	__global__ void cCalcBound(int, float*);
 
-	__global__ void cCalculate(float*, float*, float*, float*, float*, float*, float*, float*, float*);
-
-	__device__ void cFinalProjection(float*, float*, float*);
-	__device__ void cProjectionInX(float*, float*);
-	__device__ void cProjectionInY(float*, float*, float*, float*);
-	__device__ void cAdvection(float *, float *, float *, float *);
-	__device__ void cDiffuse(int, float *, float *);
-	__device__ void cAddSource(float *, float *);
-
-	__device__ void cSetBoundary(int, float*);
-	__device__ void cSwap(float**, float**);
+	void swap(float**, float**);
 
 	__device__ int cGetX(int);
 	__device__ int cGetY(int);
